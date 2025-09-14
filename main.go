@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"embed"
-	"fmt"
 
 	adapter "github.com/w0ikid/dekstop-todo-app/internal/adapters/wails"
 	"github.com/w0ikid/dekstop-todo-app/internal/app"
@@ -45,7 +44,7 @@ func main() {
 		panic("cannot connect to db: " + err.Error())
 	}
 	defer conn.Close()
-	fmt.Println(cfg.Database.DSN())
+
 	// Queries
 	queries := db.New(conn)
 

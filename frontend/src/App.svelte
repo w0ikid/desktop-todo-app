@@ -130,6 +130,11 @@
       loading = true;
       error = "";
       const result = await TaskHandler.GetDashboard();
+      
+      if (result && result.due_today) {
+        result.due_today = result.due_today.filter(task => task.Status !== "completed");
+      }
+
       dashboard = result;
     } catch (err) {
       error = `Error loading dashboard: ${err}`;
@@ -217,6 +222,20 @@
       await refreshCurrentView();
     } catch (err) {
       error = `Error completing task: ${err}`;
+      console.error(err);
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function uncompleteTask(id: string) {
+    try {
+      loading = true;
+
+      await TaskHandler.UpdateTask(id, null, "active", null, null); 
+      await refreshCurrentView();
+    } catch (err) {
+      error = `Error reopening task: ${err}`;
       console.error(err);
     } finally {
       loading = false;
@@ -711,6 +730,13 @@
                         >
                           ✅ Complete
                         </button>
+                        {:else}
+                          <button
+                            on:click={() => uncompleteTask(task.ID)}
+                            class="action-button reopen-btn"
+                            disabled={loading}>
+                            ↩️ Reopen
+                          </button>
                       {/if}
                       <button
                         on:click={() => deleteTask(task.ID)}
