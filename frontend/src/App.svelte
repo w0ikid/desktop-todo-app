@@ -39,6 +39,10 @@
   // Form validation
   let titleError = "";
 
+  // Sorting state
+  let sortBy: "date" | "priority" | "title" | "status" | "created" = "created";
+  let sortOrder: "asc" | "desc" = "desc";
+
   // Theme functions
   function toggleTheme() {
     isDarkMode = !isDarkMode;
@@ -66,6 +70,60 @@
     document.documentElement.setAttribute('data-theme', savedTheme);
   }
 
+  // Sorting functions
+  function setPriorityValue(priority: string): number {
+    switch (priority.toLowerCase()) {
+      case "high": return 3;
+      case "medium": return 2;
+      case "low": return 1;
+      default: return 0;
+    }
+  }
+
+  function sortTasks(tasksToSort: Task[]): Task[] {
+    return [...tasksToSort].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case "priority":
+          comparison = setPriorityValue(b.Priority) - setPriorityValue(a.Priority);
+          break;
+        case "date":
+          const dateA = a.DueDate ? new Date(a.DueDate).getTime() : Infinity;
+          const dateB = b.DueDate ? new Date(b.DueDate).getTime() : Infinity;
+          comparison = dateA - dateB;
+          break;
+        case "title":
+          comparison = a.Title.toLowerCase().localeCompare(b.Title.toLowerCase());
+          break;
+        case "status":
+          comparison = a.Status.localeCompare(b.Status);
+          break;
+        case "created":
+          comparison = new Date(a.CreatedAt).getTime() - new Date(b.CreatedAt).getTime();
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+  }
+
+  function handleSortChange(newSortBy: typeof sortBy) {
+    if (sortBy === newSortBy) {
+      // Toggle sort order if same field
+      sortOrder = sortOrder === "asc" ? "desc" : "asc";
+    } else {
+      // Set new sort field with default order
+      sortBy = newSortBy;
+      sortOrder = newSortBy === "date" ? "asc" : "desc";
+    }
+    
+    // Re-sort current tasks
+    tasks = sortTasks(tasks);
+  }
+
   // Load dashboard data
   async function loadDashboard() {
     try {
@@ -87,7 +145,7 @@
       loading = true;
       error = "";
       const result = await TaskHandler.ListTasks(status || null, null, filter || null);
-      tasks = result.tasks || [];
+      tasks = sortTasks(result.tasks || []);
     } catch (err) {
       error = `Error loading tasks: ${err}`;
       console.error(err);
@@ -267,6 +325,11 @@
     currentDate.setHours(0, 0, 0, 0);
     
     return dueDate < currentDate;
+  }
+
+  function getSortIcon(field: typeof sortBy): string {
+    if (sortBy !== field) return "↕️";
+    return sortOrder === "asc" ? "⬆️" : "⬇️";
   }
 
   onMount(() => {
@@ -513,6 +576,48 @@
               <span class="task-count">({tasks.length})</span>
             {/if}
           </h2>
+
+          <!-- Sorting Controls -->
+          <div class="sort-controls">
+            <span class="sort-label">Sort by:</span>
+            <div class="sort-buttons">
+              <button
+                class="sort-button {sortBy === 'priority' ? 'sort-active' : ''}"
+                on:click={() => handleSortChange('priority')}
+                title="Sort by priority"
+              >
+                <span class="sort-text">Priority</span>
+                <span class="sort-icon">{getSortIcon('priority')}</span>
+              </button>
+              
+              <button
+                class="sort-button {sortBy === 'date' ? 'sort-active' : ''}"
+                on:click={() => handleSortChange('date')}
+                title="Sort by due date"
+              >
+                <span class="sort-text">Due Date</span>
+                <span class="sort-icon">{getSortIcon('date')}</span>
+              </button>
+              
+              <button
+                class="sort-button {sortBy === 'title' ? 'sort-active' : ''}"
+                on:click={() => handleSortChange('title')}
+                title="Sort by title"
+              >
+                <span class="sort-text">Title</span>
+                <span class="sort-icon">{getSortIcon('title')}</span>
+              </button>
+              
+              <button
+                class="sort-button {sortBy === 'created' ? 'sort-active' : ''}"
+                on:click={() => handleSortChange('created')}
+                title="Sort by created date"
+              >
+                <span class="sort-text">Created</span>
+                <span class="sort-icon">{getSortIcon('created')}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {#if loading}
@@ -1322,12 +1427,14 @@
 
   .task-list-header {
     margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
   }
 
   .list-title {
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 0;
+    margin: 0 0 1rem 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1336,6 +1443,87 @@
   .task-count {
     color: var(--muted-text-color);
     font-weight: 400;
+  }
+
+  /* NEW: Sorting Controls */
+  .sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .sort-label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.9rem;
+  }
+
+  .sort-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .sort-button {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+  }
+
+  .sort-button:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+  }
+
+  .sort-active {
+    background: linear-gradient(135deg, var(--primary-color), #5a4acd);
+    border-color: var(--primary-color);
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(138, 124, 216, 0.3);
+  }
+
+  .sort-text {
+    font-size: 0.85rem;
+  }
+
+  .sort-icon {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 768px) {
+    .sort-controls {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    
+    .sort-buttons {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .sort-button {
+      flex: 1;
+      justify-content: center;
+      min-width: 0;
+    }
+    
+    .sort-text {
+      display: none;
+    }
   }
   
   .task-badges {
