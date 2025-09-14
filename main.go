@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 
 	adapter "github.com/w0ikid/dekstop-todo-app/internal/adapters/wails"
 	"github.com/w0ikid/dekstop-todo-app/internal/app"
