@@ -44,7 +44,7 @@
 ## 📸 Скриншоты
 ![photo](photos/image2.png)
 
-Больше фото в photos/
+[Photos folder on GitHub](https://github.com/w0ikid/desktop-todo-app/tree/main/photos)
 
 ## 🎬 Демонстрация
 
