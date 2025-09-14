@@ -75,10 +75,13 @@ make dev-up
 wails dev
 ```
 
-make если нету:
+если у вас нету make вместо `make dev-up` можете просто прописать:
 
 ```
 docker-compose up -d postgres
 
 docker-compose up migrate
 ```
+
+
+ЕСЛИ ЕСТЬ ВОПРОСЫ ПИШИТЕ В ТГ @w0ikid
