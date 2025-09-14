@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.29.0
 
-package postgres
+package db
 
 import (
 	"context"
@@ -11,12 +11,9 @@ import (
 type Querier interface {
 	DeleteTask(ctx context.Context, id string) error
 	GetAllTasks(ctx context.Context) ([]Task, error)
-	GetOverdueTasks(ctx context.Context) ([]Task, error)
-	GetSortedTasks(ctx context.Context, arg GetSortedTasksParams) ([]Task, error)
 	GetTaskByID(ctx context.Context, id string) (Task, error)
 	GetTasksByStatus(ctx context.Context, status string) ([]Task, error)
-	GetTasksDueThisWeek(ctx context.Context) ([]Task, error)
-	GetTasksDueToday(ctx context.Context) ([]Task, error)
+	GetTasksDueBetween(ctx context.Context, arg GetTasksDueBetweenParams) ([]Task, error)
 	SaveTask(ctx context.Context, arg SaveTaskParams) error
 }
 

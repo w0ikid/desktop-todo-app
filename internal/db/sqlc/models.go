@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.29.0
 
-package postgres
+package db
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
@@ -14,5 +14,5 @@ type Task struct {
 	Status    string           `json:"status"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	DueDate   pgtype.Timestamp `json:"due_date"`
-	Priority  pgtype.Text      `json:"priority"`
+	Priority  string           `json:"priority"`
 }

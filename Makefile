@@ -41,11 +41,11 @@ dropdb:
 # Миграции
 migrate-postgres:
 	@echo "Running PostgreSQL migrations..."
-	migrate -path internal/repository/postgres/migrations -database "$(POSTGRES_URL)" up
+	migrate -path internal/db/migrations -database "$(POSTGRES_URL)" up
 
 rollback-postgres:
 	@echo "Rolling back PostgreSQL migrations..."
-	migrate -path internal/repository/postgres/migrations -database "$(POSTGRES_URL)" down 1
+	migrate -path internal/db/migrations -database "$(POSTGRES_URL)" down 1
 
 # Генерация SQLC кода
 sqlc:
